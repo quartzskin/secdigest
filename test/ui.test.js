@@ -28,6 +28,12 @@ test('ui server: host and origin checks, token, security headers', async () => {
     const page = await raw(srv.url + '/');
     assert.equal(page.status, 200);
     assert.match(page.headers['content-security-policy'], /default-src 'none'/);
+    assert.match(page.headers['content-security-policy'], /script-src 'sha256-[A-Za-z0-9+/=]+'/);
+    assert.ok(!/unsafe-inline/.test(page.headers['content-security-policy']));
+    assert.match(page.body, /<table>/);
+    assert.match(page.body, /id="filter"/);
+    assert.match(page.body, /id="min"/);
+    assert.ok(!/<(link|script)[^>]+(src|href)=/i.test(page.body.replace(/<a [^>]*>/g, '')));
     assert.ok(page.body.includes(srv.token));
     assert.ok(!/https?:\/\/(?!127\.0\.0\.1)/.test(page.body.replace('http://www.w3.org', '')));
 
@@ -38,6 +44,7 @@ test('ui server: host and origin checks, token, security headers', async () => {
     assert.equal(api.status, 200);
     assert.equal(JSON.parse(api.body).inventory, 1);
     assert.equal((await raw(srv.url + '/nope')).status, 404);
+    assert.equal((await raw(srv.url + '/app.js')).status, 404);
 
     const post = (headers, body = '{"pattern":"Acme*"}') =>
       raw(srv.url + '/api/ignore', { method: 'POST', headers: { host, 'content-type': 'application/json', ...headers }, body });
