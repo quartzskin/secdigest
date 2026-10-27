@@ -1,0 +1,32 @@
+{
+  "title": "Sample KEV catalog",
+  "catalogVersion": "2025.01.01",
+  "count": 3,
+  "vulnerabilities": [
+    {
+      "cveID": "CVE-2025-1001",
+      "vendorProject": "Acme",
+      "product": "Widget Studio",
+      "vulnerabilityName": "Acme Widget Studio Path Traversal Vulnerability",
+      "dateAdded": "2025-01-02",
+      "shortDescription": "Acme Widget Studio contains a path traversal flaw.",
+      "requiredAction": "Apply updates per vendor instructions.",
+      "knownRansomwareCampaignUse": "Known"
+    },
+    {
+      "cveID": "CVE-2025-1002",
+      "vendorProject": "Contoso",
+      "product": "Office",
+      "vulnerabilityName": "Contoso Office Memory Corruption",
+      "dateAdded": "2025-01-03",
+      "shortDescription": "Memory corruption in Contoso Office.",
+      "requiredAction": "Apply updates.",
+      "knownRansomwareCampaignUse": "Unknown"
+    },
+    {
+      "cveID": "not-a-cve",
+      "vendorProject": "X",
+      "product": "Y"
+    }
+  ]
+}

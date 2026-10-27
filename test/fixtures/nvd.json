@@ -1,0 +1,97 @@
+{
+  "resultsPerPage": 2,
+  "startIndex": 0,
+  "totalResults": 2,
+  "vulnerabilities": [
+    {
+      "cve": {
+        "id": "CVE-2025-1001",
+        "vulnStatus": "Analyzed",
+        "published": "2025-01-01T10:00:00.000",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "Path traversal in Acme Widget Studio before 4.2.1 allows file reads. Second sentence."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 9.1,
+                "baseSeverity": "CRITICAL"
+              }
+            }
+          ]
+        },
+        "configurations": [
+          {
+            "nodes": [
+              {
+                "operator": "OR",
+                "cpeMatch": [
+                  {
+                    "vulnerable": true,
+                    "criteria": "cpe:2.3:a:acme:widget_studio:*:*:*:*:*:*:*:*",
+                    "versionEndExcluding": "4.2.1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2025-2002",
+        "vulnStatus": "Analyzed",
+        "published": "2025-01-04T10:00:00.000",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "Buffer overflow in Fabrikam Archiver 1.x."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV2": [
+            {
+              "cvssData": {
+                "baseScore": 5
+              }
+            }
+          ]
+        },
+        "configurations": [
+          {
+            "nodes": [
+              {
+                "operator": "OR",
+                "cpeMatch": [
+                  {
+                    "vulnerable": true,
+                    "criteria": "cpe:2.3:a:fabrikam:archiver:*:*:*:*:*:*:*:*",
+                    "versionStartIncluding": "1.0",
+                    "versionEndExcluding": "2.0"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2025-3003",
+        "vulnStatus": "Rejected",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "** REJECT ** duplicate"
+          }
+        ]
+      }
+    }
+  ]
+}

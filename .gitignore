@@ -1,0 +1,6 @@
+node_modules/
+_scratch/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm

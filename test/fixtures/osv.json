@@ -1,0 +1,19 @@
+{
+  "vulns": [
+    {
+      "id": "GHSA-xxxx-yyyy-zzzz",
+      "summary": "Prototype pollution in leftpadder",
+      "details": "Crafted input pollutes Object.prototype.",
+      "aliases": [
+        "CVE-2025-4004"
+      ],
+      "published": "2025-01-05T00:00:00Z",
+      "database_specific": {
+        "severity": "MODERATE"
+      }
+    },
+    {
+      "summary": "no id, should be skipped"
+    }
+  ]
+}

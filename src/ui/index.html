@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="secdigest-token" content="__TOKEN__">
+<title>The Secdigest Gazette</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="sheet">
+  <div class="ears">
+    <span id="edition"></span>
+    <span class="ear-mid">Local edition &middot; printed on this machine</span>
+    <span id="stamp"></span>
+  </div>
+  <header class="masthead">
+    <h1>The Secdigest Gazette</h1>
+    <p class="dateline" id="dateline"></p>
+  </header>
+  <main id="front" aria-live="polite"><p class="loading">Setting type...</p></main>
+  <footer class="settings">
+    <label>Window <select id="days"><option value="3">3 days</option><option value="7">7 days</option><option value="30" selected>30 days</option><option value="90">90 days</option><option value="365">1 year</option></select></label>
+    <label>Show at least <select id="min"><option value="low" selected>low confidence</option><option value="medium">medium confidence</option><option value="high">high confidence</option></select></label>
+    <label><input type="checkbox" id="all"> every stored advisory</label>
+    <span class="fine">Items are possibilities, not findings. Check the version named in each clipping.</span>
+  </footer>
+</div>
+<aside id="clip" hidden aria-label="Clipping"></aside>
+<script src="/app.js"></script>
+</body>
+</html>

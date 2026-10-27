@@ -1,0 +1,10 @@
+{
+  "name": "secdigest",
+  "version": "0.1.0",
+  "description": "Daily security digest filtered to the software you have installed",
+  "type": "module",
+  "bin": { "secdigest": "bin/secdigest.js" },
+  "scripts": { "test": "node --test" },
+  "engines": { "node": ">=22.5" },
+  "license": "MIT"
+}

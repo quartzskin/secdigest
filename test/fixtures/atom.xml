@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Example</title>
+<entry><title>Widget Studio advisory</title><id>tag:example.test,2025:1</id><link href="https://example.test/ws"/><updated>2025-01-06T00:00:00Z</updated><summary>Widget Studio users should upgrade.</summary></entry>
+</feed>
