@@ -2,9 +2,9 @@
 
 A daily security digest filtered to the software you actually have installed. It keeps a local list of your programs, pulls public advisory feeds only when you ask, and tells you which items *may* affect something you run. It never says you are vulnerable: each match carries a confidence label, the reason it matched, and the version you should check.
 
-![front page](docs/screenshot.png)
+![ui](docs/screenshot.png)
 
-(Screenshot uses a made-up inventory and made-up advisories.)
+The screenshot uses a made-up inventory and made-up advisories.
 
 Node 22.5 or newer (developed on 26), no dependencies. Storage is a SQLite file via node:sqlite, by default `%LOCALAPPDATA%\secdigest\secdigest.db` (override with `--db FILE` or `SECDIGEST_DB`).
 
@@ -13,7 +13,7 @@ Node 22.5 or newer (developed on 26), no dependencies. Storage is a SQLite file 
     node bin/secdigest.js inventory            # scan, read-only
     node bin/secdigest.js update               # the only command that touches the network
     node bin/secdigest.js digest               # text; also --format md|html, --out FILE
-    node bin/secdigest.js ui                   # front page at http://127.0.0.1:8787/
+    node bin/secdigest.js ui                   # local page at http://127.0.0.1:8787/
 
 `inventory` reads the three Uninstall registry keys through a read-only PowerShell snippet, adds `winget list` if winget exists (`--no-winget` to skip), and records node, python, java, git and cmake versions it can run. Scanned entries are replaced on each scan; manual ones are kept.
 
@@ -27,11 +27,11 @@ Node 22.5 or newer (developed on 26), no dependencies. Storage is a SQLite file 
 
 Feeds: CISA KEV (ETag/If-Modified-Since cached), NVD CVE 2.0 by last-modified window (6.5 s between requests, 0.7 s if `NVD_API_KEY` is set), OSV for inventory entries you gave an `--ecosystem`, and any RSS/Atom feeds you add. A failing or malformed feed is reported and skipped; the others still run.
 
-Matching compares CPE vendor/product (with version ranges), KEV vendor/product, OSV package and version, and feed text against program names and publishers. Known-exploited items sort first, then confidence, severity and CVSS. In the UI the lead story is the top item, columns are by severity, and clicking an item shows the software it matched and why. The UI binds 127.0.0.1, rejects other Host headers, requires Origin and a per-run token for its one write action (adding an ignore rule), loads no external resources, and takes `--no-open`, `--browser EXE` or the `BROWSER` variable.
+Matching compares CPE vendor/product (with version ranges), KEV vendor/product, OSV package and version, and feed text against program names and publishers. Known-exploited items sort first, then confidence, severity and CVSS. The UI is one plain page: a counts line, a table of matches with a text filter and a confidence select, and a details row (summary, source link, every matched program and why) when you click a row. The UI binds 127.0.0.1, rejects other Host headers, requires Origin and a per-run token for its one write action (adding an ignore rule), loads no external resources, and takes `--no-open`, `--browser EXE` or the `BROWSER` variable.
 
 ## Tests
 
-    node --test
+    node --test "test/*.test.js"
 
 Tests run against fixture feeds in `test/fixtures` and a local fake HTTP server, including truncated JSON, HTML in place of a feed, 503s and a dead port.
 
@@ -48,4 +48,4 @@ On the author's machine a first `inventory` found 143 entries (91 registry, 49 w
 - Version comparison is numeric segments only; pre-release tags are ignored.
 - Digest windows use the advisory's published date (KEV: date added), not the date you first fetched it.
 - No scheduler. Run `update` yourself or from Task Scheduler.
-- The UI was only screenshotted in headless Edge; Firefox/LibreWolf was not driven.
+- The UI was only checked in headless Edge; Firefox/LibreWolf was not driven.
