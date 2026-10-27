@@ -2,31 +2,161 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="secdigest-token" content="__TOKEN__">
-<title>The Secdigest Gazette</title>
-<link rel="stylesheet" href="/style.css">
+<title>secdigest</title>
+<style>
+body { font-family: system-ui, sans-serif; margin: 1rem; }
+form { margin: .5rem 0; }
+form label, form input, form select { margin-right: .75rem; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #aaa; padding: .25rem .5rem; text-align: left; vertical-align: top; }
+th { background: #eee; }
+tr.item { cursor: pointer; }
+tr.item:hover { background: #f4f4f4; }
+.date { white-space: nowrap; }
+.kev { color: #b00020; font-weight: bold; }
+.detail td { background: #fafafa; }
+.detail p { margin: .3rem 0; }
+.detail button { margin-top: .2rem; }
+#status { margin: .5rem 0; }
+</style>
 </head>
 <body>
-<div class="sheet">
-  <div class="ears">
-    <span id="edition"></span>
-    <span class="ear-mid">Local edition &middot; printed on this machine</span>
-    <span id="stamp"></span>
-  </div>
-  <header class="masthead">
-    <h1>The Secdigest Gazette</h1>
-    <p class="dateline" id="dateline"></p>
-  </header>
-  <main id="front" aria-live="polite"><p class="loading">Setting type...</p></main>
-  <footer class="settings">
-    <label>Window <select id="days"><option value="3">3 days</option><option value="7">7 days</option><option value="30" selected>30 days</option><option value="90">90 days</option><option value="365">1 year</option></select></label>
-    <label>Show at least <select id="min"><option value="low" selected>low confidence</option><option value="medium">medium confidence</option><option value="high">high confidence</option></select></label>
-    <label><input type="checkbox" id="all"> every stored advisory</label>
-    <span class="fine">Items are possibilities, not findings. Check the version named in each clipping.</span>
-  </footer>
-</div>
-<aside id="clip" hidden aria-label="Clipping"></aside>
-<script src="/app.js"></script>
+<h1>secdigest</h1>
+<p id="counts">Loading...</p>
+<form onsubmit="return false">
+  <label>Filter <input type="search" id="filter" size="30" placeholder="id, title or software"></label>
+  <label>Confidence
+    <select id="min"><option value="low">any</option><option value="medium">medium or better</option><option value="high">high only</option></select>
+  </label>
+  <label>Window
+    <select id="days"><option value="3">3 days</option><option value="7">7 days</option><option value="30" selected>30 days</option><option value="90">90 days</option><option value="365">1 year</option></select>
+  </label>
+  <label><input type="checkbox" id="all"> every stored advisory</label>
+</form>
+<p id="status" role="status"></p>
+<table>
+  <thead><tr><th>Severity</th><th>CVE / title</th><th>Software</th><th>Confidence</th><th>Reason</th><th>Date</th></tr></thead>
+  <tbody id="rows"></tbody>
+</table>
+<p>Items are possibilities, not findings. Check the version named in each match.</p>
+<script>
+'use strict';
+const token = document.querySelector('meta[name="secdigest-token"]').content;
+const RANK = { low: 1, medium: 2, high: 3 };
+const $ = (id) => document.getElementById(id);
+let digest = null;
+
+function el(tag, text, attrs) {
+  const n = document.createElement(tag);
+  if (text != null) n.textContent = text;
+  for (const [k, v] of Object.entries(attrs || {})) n.setAttribute(k, v);
+  return n;
+}
+
+const day = (iso) => (iso ? iso.slice(0, 10) : 'undated');
+const swName = (m) => m.software.name + (m.software.version ? ' ' + m.software.version : '');
+const headline = (it) => it.title.replace(/^(CVE-\d{4}-\d+|[A-Z]+-[\w-]+):\s*/, '');
+
+function severityCell(it) {
+  const td = el('td');
+  if (it.kev) td.append(el('span', 'KEV', { class: 'kev' }), ' ');
+  td.append(it.severity ? it.severity + (it.cvss ? ' ' + it.cvss : '') : 'unrated');
+  return td;
+}
+
+function titleCell(it) {
+  const td = el('td');
+  td.append(el('b', it.id), ' ', headline(it));
+  return td;
+}
+
+function detailRow(it) {
+  const tr = el('tr', null, { class: 'detail' });
+  tr.hidden = true;
+  const td = el('td', null, { colspan: '6' });
+  td.append(el('p', it.summary || 'No summary supplied.'));
+  td.append(el('p', 'Sources: ' + it.sources.join(', ')));
+  if (/^https?:\/\//.test(it.url || '')) {
+    const p = el('p');
+    p.append(el('a', it.url, { href: it.url, rel: 'noreferrer noopener', target: '_blank' }));
+    td.append(p);
+  }
+  for (const m of it.matches) {
+    const p = el('p');
+    p.append(el('b', swName(m)), ' (' + m.confidence + '): ' + m.reason + '. ' + m.note + '. ');
+    const b = el('button', 'Ignore this program', { type: 'button' });
+    b.addEventListener('click', () => ignore(m.software.name));
+    p.append(b);
+    td.append(p);
+  }
+  tr.append(td);
+  return tr;
+}
+
+function itemRows(it) {
+  const m = it.matches[0];
+  const tr = el('tr', null, { class: 'item', tabindex: '0' });
+  const more = it.matches.length > 1 ? ' (+' + (it.matches.length - 1) + ' more)' : '';
+  tr.append(severityCell(it), titleCell(it), el('td', swName(m) + more), el('td', it.confidence),
+    el('td', m.reason), el('td', day(it.published), { class: 'date' }));
+  const detail = detailRow(it);
+  const toggle = () => { detail.hidden = !detail.hidden; };
+  tr.addEventListener('click', toggle);
+  tr.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+  });
+  return [tr, detail];
+}
+
+function render() {
+  const rows = $('rows');
+  rows.replaceChildren();
+  if (!digest) return;
+  const q = $('filter').value.trim().toLowerCase();
+  const min = RANK[$('min').value];
+  const shown = digest.items.filter((it) => RANK[it.confidence] >= min &&
+    (!q || (it.id + ' ' + it.title + ' ' + it.matches.map(swName).join(' ')).toLowerCase().includes(q)));
+  for (const it of shown) rows.append(...itemRows(it));
+  const c = digest.counts;
+  $('counts').textContent = digest.items.length + ' possible matches (' + c.kev + ' known exploited, ' +
+    c.critical + ' critical, ' + c.high + ' high, ' + c.medium + ' medium, ' + (c.low + c.unknown) + ' low or unrated). ' +
+    digest.inventory + ' programs listed, ' + digest.scanned + ' advisories on file.';
+  $('status').textContent = shown.length === digest.items.length ? '' : 'Showing ' + shown.length + ' of ' + digest.items.length + '.';
+  if (!shown.length) {
+    const tr = el('tr');
+    tr.append(el('td', digest.scanned ? 'Nothing matches.' : 'No advisories on file yet. Run "secdigest update" first.', { colspan: '6' }));
+    rows.append(tr);
+  }
+}
+
+async function ignore(name) {
+  const res = await fetch('/api/ignore', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-secdigest-token': token },
+    body: JSON.stringify({ pattern: name }),
+  });
+  if (res.ok) load();
+  else $('status').textContent = 'Could not save the rule: HTTP ' + res.status;
+}
+
+async function load() {
+  const q = new URLSearchParams({ days: $('days').value, all: $('all').checked ? '1' : '0' });
+  try {
+    const res = await fetch('/api/digest?' + q);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    digest = await res.json();
+    render();
+  } catch (err) {
+    digest = null;
+    $('rows').replaceChildren();
+    $('counts').textContent = 'Failed to load: ' + err.message;
+  }
+}
+
+for (const id of ['days', 'all']) $(id).addEventListener('change', load);
+for (const id of ['min', 'filter']) $(id).addEventListener('input', render);
+load();
+</script>
 </body>
 </html>

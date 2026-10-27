@@ -1,14 +1,19 @@
 import { createServer } from 'node:http';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { addRule } from './db.js';
 import { buildDigest } from './digest.js';
 
-const asset = (name) => readFileSync(fileURLToPath(new URL(`./ui/${name}`, import.meta.url)));
+const PAGE = readFileSync(fileURLToPath(new URL('./ui/index.html', import.meta.url)), 'utf8');
 
-const CSP = "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+// Style and script are inline in the page, so the CSP allows exactly those blocks by hash.
+const hashOf = (tag) => {
+  const body = PAGE.match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`))[1];
+  return `'sha256-${createHash('sha256').update(body).digest('base64')}'`;
+};
+const CSP = `default-src 'none'; script-src ${hashOf('script')}; style-src ${hashOf('style')}; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`;
 
 export function startServer(db, { port = 8787 } = {}) {
   const token = randomBytes(16).toString('hex');
@@ -29,11 +34,8 @@ export function startServer(db, { port = 8787 } = {}) {
     try {
       if (req.method === 'GET') {
         if (url.pathname === '/') {
-          const html = asset('index.html').toString().replace('__TOKEN__', token);
-          return send(res, 200, 'text/html; charset=utf-8', html);
+          return send(res, 200, 'text/html; charset=utf-8', PAGE.replace('__TOKEN__', token));
         }
-        if (url.pathname === '/app.js') return send(res, 200, 'text/javascript; charset=utf-8', asset('app.js'));
-        if (url.pathname === '/style.css') return send(res, 200, 'text/css; charset=utf-8', asset('style.css'));
         if (url.pathname === '/api/digest') {
           const days = Math.min(Math.max(parseInt(url.searchParams.get('days'), 10) || 30, 1), 3650);
           const all = url.searchParams.get('all') === '1';
