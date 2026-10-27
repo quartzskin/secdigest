@@ -65,9 +65,9 @@ export function renderHtml(d) {
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>${esc(h.title)}</title>
 <style>
-body{font:16px/1.5 Georgia,serif;max-width:46em;margin:2em auto;padding:0 1em;color:#1c1a17;background:#f6f1e4}
-h1{border-bottom:3px double #1c1a17}article{border-top:1px solid #8a8272;padding:.5em 0}article.kev h2{color:#8c1d12}
-h2{font-size:1.1em;margin:.2em 0}.meta{margin:0;color:#5b5548;font-size:.85em}a{color:inherit}
+body{font:16px/1.5 system-ui,sans-serif;max-width:46em;margin:2em auto;padding:0 1em}
+article{border-top:1px solid #aaa;padding:.5em 0}article.kev h2{color:#b00020}
+h2{font-size:1.1em;margin:.2em 0}.meta{margin:0;color:#555;font-size:.85em}a{color:inherit}
 </style></head><body>
 <h1>${esc(h.title)}</h1><p>${esc(h.line)}</p><p>Outlook: <b>${esc(d.weather.label)}</b>. ${esc(d.weather.line)}</p>
 ${items || '<p>Nothing matched.</p>'}
